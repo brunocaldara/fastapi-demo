@@ -7,6 +7,7 @@ from fastapi import (Body, Depends, FastAPI, File, Form, Header, HTTPException,
                      Path, Query, Response, UploadFile, status)
 from fastapi.responses import (FileResponse, HTMLResponse, PlainTextResponse,
                                RedirectResponse)
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel
 
 
@@ -173,6 +174,17 @@ async def get_paginacao_nova(paginacao: Pagination = Depends(paginacaoMetodos.sk
 async def get_paginacao_nova(paginacao: Pagination = Depends(paginacaoMetodos.page_size)):
     page, size = paginacao
     return {"page": page, "size": size}
+
+API_TOKEN = "caldara"
+
+api_key_header = APIKeyHeader(name="Token")
+
+
+@app.get("/rota-protegida")
+async def rota_protegida(token: str = Depends(api_key_header)):
+    if token != API_TOKEN:
+        HTTPException(status=status.HTTP_403_FORBIDDEN)
+    return {"hello": "world"}
 
 
 if __name__ == '__main__':
